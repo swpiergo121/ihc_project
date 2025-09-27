@@ -5,10 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/PrimeraScena.unity
+    guid: a3a2c866b4ecba146ad7e5ddf71c57af
+  - enabled: 0
+    path: Assets/lab22.unity
+    guid: a2ef5371b21f1f8449333bcf82017317
   - enabled: 1
-    path: Assets/throw.unity
-    guid: 261cc5cdcd0c7c999968009dd1ff7c1e
-  m_configObjects:
-    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: d0d51a699a451e55385497bb61ff5c16, type: 2}
-    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 04fe8f7782bb5f221b4ddbc29dd8c442, type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 0b71c275dacef42ac941fa6a461ed693, type: 2}
+    path: Assets/avance_proyecto_marce.unity
+    guid: 17a5c40f276149840af3076063ba1434
+  m_configObjects: {}
