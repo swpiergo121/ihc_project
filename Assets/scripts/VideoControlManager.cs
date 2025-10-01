@@ -37,12 +37,18 @@ public class VideoControlManager : MonoBehaviour
         {
             videoPlayer.Pause();
             Debug.Log("Video Paused.");
+            if (playPauseButtonText != null) {
+                playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
+            }
         }
         else
         {
             // If the video is at the end, Play() will restart it.
             videoPlayer.Play();
             Debug.Log("Video Playing.");
+            if (playPauseButtonText != null) {
+                playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
+            }
         }
 
         UpdatePlayPauseSymbol();
@@ -57,11 +63,11 @@ public class VideoControlManager : MonoBehaviour
 
         if (videoPlayer.isPlaying)
         {
-            playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
+                playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
         }
         else
         {
-            playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
+                playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
         }
     }
 
