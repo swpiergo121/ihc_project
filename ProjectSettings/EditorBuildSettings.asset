@@ -14,7 +14,6 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/avance_proyecto_marce.unity
     guid: 17a5c40f276149840af3076063ba1434
-  - enabled: 1
-    path: Assets/text.unity
-    guid: c398ec53cccac269aad1095ec3243b16
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 0b71c275dacef42ac941fa6a461ed693, type: 2}
+
