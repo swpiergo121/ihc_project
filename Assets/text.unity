@@ -587,12 +587,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: -10.170944, z: 14.393049, w: 7.2090178}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 622188976}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 622188976}
+  m_maskType: 0
 --- !u!23 &622188976
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -887,12 +887,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: -10.170944, z: 14.393049, w: 7.2090178}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_renderer: {fileID: 1198057245}
-  m_maskType: 0
   _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
+  m_hasFontAssetChanged: 0
+  m_renderer: {fileID: 1198057245}
+  m_maskType: 0
 --- !u!23 &1198057245
 MeshRenderer:
   m_ObjectHideFlags: 0
