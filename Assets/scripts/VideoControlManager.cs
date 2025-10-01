@@ -2,8 +2,9 @@
 using UnityEngine.Video;
 using UnityEngine.UI; // Required for UI elements like Text/Image
 using TMPro;      // Required if using TextMeshPro
+using UnityEngine.EventSystems; // Required for Event Trigger interfaces
 
-public class VideoControlManager : MonoBehaviour
+public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     private VideoPlayer videoPlayer;
 
@@ -31,7 +32,10 @@ public class VideoControlManager : MonoBehaviour
         {
             videoProgressBar.minValue = 0;
             // Max value will be set once video is prepared
-            videoProgressBar.onValueChanged.AddListener(OnSliderValueChanged);
+            // We will NOT add a listener here for onValueChanged,
+            // instead we'll use IPointerDownHandler and IPointerUpHandler
+            // to manage the seeking state and then directly call SeekToMoment
+            // from the slider's On Value Changed event in the Inspector.
         }
     }
 
@@ -117,32 +121,45 @@ public class VideoControlManager : MonoBehaviour
             {
                 videoPlayer.Play();
             }
-            Debug.Log($"Video set to time: {targetTime} seconds.");
+            // Debug.Log($"Video set to time: {targetTime} seconds."); // Removed for less spam
             UpdatePlayPauseSymbol(); // Update symbol after seeking and playing
         }
     }
 
-    /// <summary>
-    /// Called when the slider's value changes (user drags it).
-    /// </summary>
-    public void OnSliderValueChanged(float value)
-    {
-        if (videoPlayer == null) return;
+    // --- New Methods for Slider Interaction ---
 
-        // Set the seeking flag to true when the user starts dragging
-        // This prevents the Update() method from overriding the slider's value
-        // while the user is actively seeking.
-        isSeeking = true;
-        SeekToMoment(value);
+    /// <summary>
+    /// Called when the user starts dragging the slider.
+    /// This is part of the IPointerDownHandler interface.
+    /// </summary>
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (videoProgressBar != null && eventData.pointerPress == videoProgressBar.gameObject)
+        {
+            isSeeking = true;
+            Debug.Log("Slider drag started.");
+        }
     }
 
     /// <summary>
-    /// Call this function when the user releases the slider handle.
-    /// This can be hooked up to the Slider's "On Pointer Up" event (requires Event Trigger).
+    /// Called when the user releases the slider handle.
+    /// This is part of the IPointerUpHandler interface.
     /// </summary>
-    public void OnSliderPointerUp()
+    public void OnPointerUp(PointerEventData eventData)
     {
-        isSeeking = false; // Reset the seeking flag
-        Debug.Log("Slider released. Resuming normal updates.");
+        if (videoProgressBar != null && eventData.pointerPress == videoProgressBar.gameObject)
+        {
+            isSeeking = false;
+            Debug.Log("Slider released. Resuming normal updates.");
+        }
+    }
+
+    /// <summary>
+    /// This function should be hooked to the Slider's "On Value Changed" event in the Inspector.
+    /// </summary>
+    public void OnVideoSliderChanged(float value)
+    {
+        if (videoPlayer == null) return;
+        SeekToMoment(value);
     }
 }
