@@ -7,12 +7,13 @@ public class VideoControlManager : MonoBehaviour
 {
     private VideoPlayer videoPlayer;
 
-    // Assign the Text/TextMeshPro component from the Play/Pause Button's child
-    public TextMeshProUGUI playPauseButtonText; // Use 'Text' if not using TMP
-    // or public Text playPauseButtonText; 
+    public TextMeshProUGUI playPauseButtonText;
+    public Slider videoProgressBar; // Reference to your UI Slider
 
     private const string PLAY_SYMBOL = "▶️";
     private const string PAUSE_SYMBOL = "⏸️";
+
+    private bool isSeeking = false; // Flag to prevent conflicting updates during user seek
 
     void Awake()
     {
@@ -24,6 +25,42 @@ public class VideoControlManager : MonoBehaviour
 
         // Initialize the button symbol based on the initial state (assuming initially stopped/paused)
         UpdatePlayPauseSymbol();
+
+        // Initialize slider if assigned
+        if (videoProgressBar != null)
+        {
+            videoProgressBar.minValue = 0;
+            // Max value will be set once video is prepared
+            videoProgressBar.onValueChanged.AddListener(OnSliderValueChanged);
+        }
+    }
+
+    void Start()
+    {
+        // Ensure video is prepared before setting slider max value
+        videoPlayer.prepareCompleted += OnVideoPrepared;
+        if (!videoPlayer.isPrepared)
+        {
+            videoPlayer.Prepare(); // Start preparing if not already
+        }
+    }
+
+    void OnVideoPrepared(VideoPlayer vp)
+    {
+        if (videoProgressBar != null)
+        {
+            videoProgressBar.maxValue = (float)vp.length;
+            Debug.Log($"Video prepared. Slider max value set to: {videoProgressBar.maxValue}");
+        }
+    }
+
+    void Update()
+    {
+        // Only update slider if video is playing and user is not currently dragging it
+        if (videoPlayer != null && videoPlayer.isPlaying && videoProgressBar != null && !isSeeking)
+        {
+            videoProgressBar.value = (float)videoPlayer.time;
+        }
     }
 
     /// <summary>
@@ -37,18 +74,11 @@ public class VideoControlManager : MonoBehaviour
         {
             videoPlayer.Pause();
             Debug.Log("Video Paused.");
-            if (playPauseButtonText != null) {
-                playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
-            }
         }
         else
         {
-            // If the video is at the end, Play() will restart it.
             videoPlayer.Play();
             Debug.Log("Video Playing.");
-            if (playPauseButtonText != null) {
-                playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
-            }
         }
 
         UpdatePlayPauseSymbol();
@@ -63,11 +93,11 @@ public class VideoControlManager : MonoBehaviour
 
         if (videoPlayer.isPlaying)
         {
-                playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
+            playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
         }
         else
         {
-                playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
+            playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
         }
     }
 
@@ -77,21 +107,42 @@ public class VideoControlManager : MonoBehaviour
     /// <param name="targetTime">The time in seconds to jump to.</param>
     public void SeekToMoment(float targetTime)
     {
-        // ... (Keep the SeekToMoment implementation from the previous answer)
-        // Ensure you call videoPlayer.Play() after setting time if it was paused
         if (videoPlayer != null)
         {
-            if (targetTime >= 0f && targetTime <= videoPlayer.length)
-            {
-                videoPlayer.time = targetTime;
+            // Clamp targetTime to valid range
+            targetTime = Mathf.Clamp(targetTime, 0f, (float)videoPlayer.length);
+            videoPlayer.time = targetTime;
 
-                if (!videoPlayer.isPlaying)
-                {
-                    videoPlayer.Play();
-                }
-                Debug.Log($"Video set to time: {targetTime} seconds.");
+            if (!videoPlayer.isPlaying)
+            {
+                videoPlayer.Play();
             }
+            Debug.Log($"Video set to time: {targetTime} seconds.");
             UpdatePlayPauseSymbol(); // Update symbol after seeking and playing
         }
+    }
+
+    /// <summary>
+    /// Called when the slider's value changes (user drags it).
+    /// </summary>
+    public void OnSliderValueChanged(float value)
+    {
+        if (videoPlayer == null) return;
+
+        // Set the seeking flag to true when the user starts dragging
+        // This prevents the Update() method from overriding the slider's value
+        // while the user is actively seeking.
+        isSeeking = true;
+        SeekToMoment(value);
+    }
+
+    /// <summary>
+    /// Call this function when the user releases the slider handle.
+    /// This can be hooked up to the Slider's "On Pointer Up" event (requires Event Trigger).
+    /// </summary>
+    public void OnSliderPointerUp()
+    {
+        isSeeking = false; // Reset the seeking flag
+        Debug.Log("Slider released. Resuming normal updates.");
     }
 }
