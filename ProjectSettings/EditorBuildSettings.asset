@@ -26,8 +26,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Permisos.unity
     guid: d4e4b7b0c0f31d840ae63ccad4f9ffb7
-  - enabled: 1
+  - enabled: 0
     path: Assets/text.unity
     guid: c398ec53cccac269aad1095ec3243b16
+  - enabled: 1
+    path: Assets/Scenes/only2.unity
+    guid: 657daef5fe84b09978f2b17a2904accb
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 0b71c275dacef42ac941fa6a461ed693, type: 2}

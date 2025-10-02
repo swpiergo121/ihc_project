@@ -93,17 +93,37 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
     /// </summary>
     private void UpdatePlayPauseSymbol()
     {
-        if (playPauseButtonText == null || videoPlayer == null) return;
+        if (playPauseButtonText == null)
+        {
+            // If this happens, it means the assignment is still incorrect despite your check.
+            // You won't see this error on device, but it's a final safeguard.
+            Debug.LogError("playPauseButtonText is NOT assigned in the Inspector!");
+            return;
+        }
+        if (videoPlayer == null)
+        {
+            // This shouldn't happen if the script is on the same GameObject as VideoPlayer.
+            Debug.LogError("VideoPlayer is NULL in UpdatePlayPauseSymbol!");
+            return;
+        }
 
+        // Check if the video is actually playing or if it's paused/stopped
         if (videoPlayer.isPlaying)
         {
-            playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
+            if (playPauseButtonText.text != PAUSE_SYMBOL)
+            {
+                playPauseButtonText.text = PAUSE_SYMBOL; // Set to Pause symbol (⏸️)
+            }
         }
-        else
+        else // Video is paused or stopped
         {
-            playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
+            if (playPauseButtonText.text != PLAY_SYMBOL)
+            {
+                playPauseButtonText.text = PLAY_SYMBOL;  // Set to Play symbol (▶️)
+            }
         }
     }
+
 
     /// <summary>
     /// Seeks to a specific moment (in seconds).
