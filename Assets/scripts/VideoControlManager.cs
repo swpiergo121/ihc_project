@@ -8,7 +8,10 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
 {
     private VideoPlayer videoPlayer;
 
-    public TextMeshProUGUI playPauseButtonText;
+    public Button button;
+    public Sprite startSprite;
+    public Sprite stopSprite;
+
     public Slider videoProgressBar;
 
     private const string PLAY_SYMBOL = "▶️";
@@ -107,9 +110,9 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
 
     private void UpdatePlayPauseSymbol()
     {
-        if (playPauseButtonText == null)
+        if (button.image == null)
         {
-            Debug.LogError("playPauseButtonText is NOT assigned in the Inspector!");
+            Debug.LogError("buttonImage is NOT assigned in the Inspector!");
             return;
         }
         if (videoPlayer == null)
@@ -120,17 +123,11 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
 
         if (videoPlayer.isPlaying)
         {
-            if (playPauseButtonText.text != PAUSE_SYMBOL)
-            {
-                playPauseButtonText.text = PAUSE_SYMBOL;
-            }
+            button.image.sprite = stopSprite;
         }
         else
         {
-            if (playPauseButtonText.text != PLAY_SYMBOL)
-            {
-                playPauseButtonText.text = PLAY_SYMBOL;
-            }
+            button.image.sprite = startSprite;
         }
     }
 
@@ -198,14 +195,14 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
         if (videoProgressBar != null && (eventData.pointerPress == videoProgressBar.gameObject ||
             (eventData.pointerPress != null && eventData.pointerPress.transform.IsChildOf(videoProgressBar.transform))))
         {
-            isSeeking = false; // User has released the slider
-            Debug.Log("Slider released. Resuming normal updates.");
             // Resume video playback only if it was playing before the seek started
             if (wasPlayingBeforeSeek && videoPlayer.isPrepared && !videoPlayer.isPlaying)
             {
                 videoPlayer.Play();
                 Debug.Log("Slider released: Video resumed playing.");
             }
+            isSeeking = false; // User has released the slider
+            Debug.Log("Slider released. Resuming normal updates.");
             // Reset the flag
             wasPlayingBeforeSeek = false;
         }
