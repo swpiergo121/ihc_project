@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 
-public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class VideoControlManager : MonoBehaviour
 {
     private VideoPlayer videoPlayer;
 
@@ -12,13 +12,8 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
     public Sprite startSprite;
     public Sprite stopSprite;
 
-    public Slider videoProgressBar;
-
     private const string PLAY_SYMBOL = "▶️";
     private const string PAUSE_SYMBOL = "⏸️";
-
-    private bool isSeeking = false; // Flag to prevent conflicting updates during user seek
-    private bool wasPlayingBeforeSeek = false; // To remember video state before seeking
 
     void Awake()
     {
@@ -29,11 +24,6 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
         }
 
         UpdatePlayPauseSymbol();
-
-        if (videoProgressBar != null)
-        {
-            videoProgressBar.minValue = 0;
-        }
     }
 
     void Start()
@@ -58,11 +48,6 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
 
     void OnVideoPrepared(VideoPlayer vp)
     {
-        if (videoProgressBar != null)
-        {
-            videoProgressBar.maxValue = (float)vp.length;
-            Debug.Log($"Video prepared. Slider max value set to: {videoProgressBar.maxValue}");
-        }
         UpdatePlayPauseSymbol();
     }
 
@@ -70,25 +55,12 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
     {
         Debug.Log("Video finished playing.");
         UpdatePlayPauseSymbol();
-        if (videoProgressBar != null)
-        {
-            videoProgressBar.value = (float)vp.length;
-        }
     }
 
     void Update()
     {
         // Always update the play/pause symbol in Update to reflect the current state
         UpdatePlayPauseSymbol();
-
-        // **SLIDER PROGRESS UPDATE LOGIC**
-        // Only update slider if video is playing AND user is NOT currently dragging it
-        if (videoPlayer != null && videoPlayer.isPlaying && videoProgressBar != null && !isSeeking)
-        {
-            videoProgressBar.value = (float)videoPlayer.time;
-        }
-        // If the video is paused and not seeking, the slider should stay where it is.
-        // If the video is paused and seeking, the slider is controlled by user input.
     }
 
     public void TogglePlayPause()
@@ -131,96 +103,4 @@ public class VideoControlManager : MonoBehaviour, IPointerDownHandler, IPointerU
         }
     }
 
-    /// <summary>
-    /// Seeks to a specific moment (in seconds).
-    /// </summary>
-    /// <param name="targetTime">The time in seconds to jump to.</param>
-    public void SeekToMoment(float targetTime)
-    {
-        if (videoPlayer != null)
-        {
-            // Clamp targetTime to valid range
-            targetTime = Mathf.Clamp(targetTime, 0f, (float)videoPlayer.length);
-            videoPlayer.time = targetTime;
-
-            // **RESTORE PLAY STATE AFTER SEEKING**
-            // If the video was playing before the seek, and it's currently paused, resume it.
-            if (wasPlayingBeforeSeek && !videoPlayer.isPlaying && videoPlayer.isPrepared)
-            {
-                videoPlayer.Play();
-                Debug.Log("SeekToMoment: Resuming play after seek.");
-            }
-            // If the video was paused before the seek, and it's currently playing (e.g., from a brief play call), pause it.
-            else if (!wasPlayingBeforeSeek && videoPlayer.isPlaying)
-            {
-                videoPlayer.Pause();
-                Debug.Log("SeekToMoment: Pausing after seek (was paused before).");
-            }
-        }
-    }
-
-    // --- Methods for Slider Interaction ---
-
-    /// <summary>
-    /// Called when the user starts dragging the slider.
-    /// This is part of the IPointerDownHandler interface.
-    /// </summary>
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        // **SLIDER DRAG START LOGIC**
-        // Check if the pointerPress is the slider itself OR a child of the slider (like the handle)
-        if (videoProgressBar != null && (eventData.pointerPress == videoProgressBar.gameObject ||
-            (eventData.pointerPress != null && eventData.pointerPress.transform.IsChildOf(videoProgressBar.transform))))
-        {
-            isSeeking = true; // User is now dragging the slider
-            Debug.Log("Slider drag started.");
-            // Remember if the video was playing before we paused it for seeking
-            wasPlayingBeforeSeek = videoPlayer.isPlaying;
-            if (videoPlayer.isPlaying)
-            {
-                videoPlayer.Pause(); // Pause video while dragging for smoother seeking
-                Debug.Log("Slider drag: Video paused.");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Called when the user releases the slider handle.
-    /// This is part of the IPointerUpHandler interface.
-    /// </summary>
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        // **SLIDER DRAG END LOGIC**
-        // Check if the pointerPress is the slider itself OR a child of the slider (like the handle)
-        if (videoProgressBar != null && (eventData.pointerPress == videoProgressBar.gameObject ||
-            (eventData.pointerPress != null && eventData.pointerPress.transform.IsChildOf(videoProgressBar.transform))))
-        {
-            // Resume video playback only if it was playing before the seek started
-            if (wasPlayingBeforeSeek && videoPlayer.isPrepared && !videoPlayer.isPlaying)
-            {
-                videoPlayer.Play();
-                Debug.Log("Slider released: Video resumed playing.");
-            }
-            isSeeking = false; // User has released the slider
-            Debug.Log("Slider released. Resuming normal updates.");
-            // Reset the flag
-            wasPlayingBeforeSeek = false;
-        }
-    }
-
-    /// <summary>
-    /// This function should be hooked to the Slider's "On Value Changed" event in the Inspector.
-    /// </summary>
-    public void OnVideoSliderChanged(float value)
-    {
-        if (videoPlayer == null) return;
-        // **CONDITIONAL SEEKING LOGIC**
-        // ONLY seek if the user is actively dragging the slider (i.e., isSeeking is true).
-        // This prevents the Update loop's programmatic slider updates from triggering seeks.
-        if (isSeeking)
-        {
-            SeekToMoment(value);
-            Debug.Log($"Slider On Value Changed (seeking): {value}");
-        }
-    }
 }
